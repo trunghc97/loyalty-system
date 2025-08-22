@@ -1,0 +1,15 @@
+server:
+  port: ${JAVA_API_PORT:8080}
+
+spring:
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/loyalty}
+
+jwt:
+  secret: ${JWT_SECRET:your-jwt-secret-key}
+  token-validity-in-seconds: 86400
+
+blockchain:
+  api:
+    url: ${BLOCKCHAIN_API_URL:http://backend-go:8081}
