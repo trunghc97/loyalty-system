@@ -1,76 +1,74 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
-const API_URL = process.env.REACT_APP_JAVA_API_URL;
-
-export interface User {
-  username: string;
-  points: number;
+interface User {
+  id: string
+  username: string
+  email: string
+  token: string
 }
 
-export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
-      setUser(userData);
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  const login = async (username: string, password: string) => {
-    try {
-      const response = await axios.post(`${API_URL}/login`, { username, password });
-      const { token, ...userData } = response.data;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      setUser(userData);
-      setIsAuthenticated(true);
-      
-      navigate('/');
-    } catch (error) {
-      toast.error('Login failed. Please check your credentials.');
-    }
-  };
-
-  const register = async (username: string, password: string, email: string) => {
-    try {
-      const response = await axios.post(`${API_URL}/register`, { username, password, email });
-      const { token, ...userData } = response.data;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      setUser(userData);
-      setIsAuthenticated(true);
-      
-      navigate('/');
-    } catch (error) {
-      toast.error('Registration failed. Please try again.');
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    setIsAuthenticated(false);
-    navigate('/login');
-  };
-
-  return {
-    user,
-    isAuthenticated,
-    login,
-    register,
-    logout
-  };
+interface AuthState {
+  user: User | null
+  setUser: (user: User | null) => void
+  isAuthenticated: boolean
+  login: (username: string, password: string) => Promise<void>
+  register: (email: string, username: string, password: string) => Promise<void>
+  logout: () => void
 }
+
+export const useAuth = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      isAuthenticated: false,
+      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      login: async (username, password) => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_JAVA}/api/java/auth/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password }),
+          })
+
+          if (!response.ok) {
+            throw new Error('Login failed')
+          }
+
+          const data = await response.json()
+          set({ user: data, isAuthenticated: true })
+        } catch (error) {
+          throw error
+        }
+      },
+      register: async (email, username, password) => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_JAVA}/api/java/auth/register`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, username, password }),
+          })
+
+          if (!response.ok) {
+            throw new Error('Registration failed')
+          }
+
+          const data = await response.json()
+          set({ user: data, isAuthenticated: true })
+        } catch (error) {
+          throw error
+        }
+      },
+      logout: () => {
+        set({ user: null, isAuthenticated: false })
+      },
+    }),
+    {
+      name: 'auth-storage',
+    }
+  )
+)

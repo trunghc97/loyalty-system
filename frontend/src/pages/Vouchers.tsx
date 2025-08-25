@@ -1,97 +1,89 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/atoms/Button'
+import { VoucherGrid } from '@/components/organisms/VoucherGrid'
 
-interface Voucher {
-  id: string;
-  code: string;
-  name: string;
-  description: string;
-  pointsCost: number;
-  discountAmount: number;
-  expiryDate: string;
-}
+// Mock data for vouchers
+const vouchers = [
+  {
+    id: '1',
+    title: 'Giảm 50k',
+    description: 'Áp dụng cho đơn hàng từ 500k',
+    points: 1000,
+    expiryDate: '2024-12-31',
+    isUsed: false,
+  },
+  {
+    id: '2',
+    title: 'Freeship',
+    description: 'Miễn phí vận chuyển toàn quốc',
+    points: 500,
+    expiryDate: '2024-12-31',
+    isUsed: true,
+  },
+  {
+    id: '3',
+    title: 'Giảm 100k',
+    description: 'Áp dụng cho đơn hàng từ 1000k',
+    points: 2000,
+    expiryDate: '2024-12-31',
+    isExpired: true,
+  },
+]
 
-function Vouchers() {
-  const [vouchers, setVouchers] = useState<Voucher[]>([]);
-  const [loading, setLoading] = useState(true);
+const filterOptions = [
+  { label: 'Tất cả', value: 'all' },
+  { label: 'Chưa sử dụng', value: 'unused' },
+  { label: 'Đã sử dụng', value: 'used' },
+  { label: 'Hết hạn', value: 'expired' },
+]
 
-  useEffect(() => {
-    fetchVouchers();
-  }, []);
+export default function Vouchers() {
+  const navigate = useNavigate()
+  const [filter, setFilter] = useState('all')
 
-  const fetchVouchers = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_JAVA_API_URL}/vouchers`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      setVouchers(response.data);
-    } catch (error) {
-      toast.error('Failed to fetch vouchers');
-    } finally {
-      setLoading(false);
+  const filteredVouchers = vouchers.filter((voucher) => {
+    switch (filter) {
+      case 'unused':
+        return !voucher.isUsed && !voucher.isExpired
+      case 'used':
+        return voucher.isUsed
+      case 'expired':
+        return voucher.isExpired
+      default:
+        return true
     }
-  };
-
-  const handleRedeem = async (voucherId: string) => {
-    try {
-      await axios.post(
-        `${process.env.REACT_APP_JAVA_API_URL}/redeem/voucher`,
-        { voucherId },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
-      toast.success('Voucher redeemed successfully');
-      fetchVouchers();
-    } catch (error) {
-      toast.error('Failed to redeem voucher');
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">Loading...</div>
-      </div>
-    );
-  }
+  })
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {vouchers.map((voucher) => (
-        <div key={voucher.id} className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">{voucher.name}</h3>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                {voucher.code}
-              </span>
-            </div>
-            <p className="mt-1 text-sm text-gray-500">{voucher.description}</p>
-            <div className="mt-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Discount</span>
-                <span className="font-medium">${voucher.discountAmount}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Cost</span>
-                <span className="font-medium text-indigo-600">{voucher.pointsCost} points</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Expires</span>
-                <span className="font-medium">{new Date(voucher.expiryDate).toLocaleDateString()}</span>
-              </div>
-            </div>
-            <button
-              onClick={() => handleRedeem(voucher.id)}
-              className="mt-4 w-full bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
-            >
-              Redeem
-            </button>
-          </div>
+    <div className="container max-w-mobile space-y-6 p-4">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold">Voucher của tôi</h1>
+          <p className="text-gray-500">
+            Quản lý và sử dụng voucher của bạn
+          </p>
         </div>
-      ))}
-    </div>
-  );
-}
+        <Button onClick={() => navigate('/redeem')}>Đổi voucher</Button>
+      </div>
 
-export default Vouchers;
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {filterOptions.map((option) => (
+          <Button
+            key={option.value}
+            variant={filter === option.value ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter(option.value)}
+          >
+            {option.label}
+          </Button>
+        ))}
+      </div>
+
+      <VoucherGrid
+        vouchers={filteredVouchers}
+        onRedeem={(id) => navigate(`/voucher/${id}`)}
+      />
+    </div>
+  )
+}

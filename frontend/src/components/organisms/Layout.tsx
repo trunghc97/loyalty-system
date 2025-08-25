@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { Navbar } from './organisms/Navbar'
+import { Navbar } from './Navbar'
 import { useAuth } from '@/hooks/useAuth'
 
 export function Layout() {

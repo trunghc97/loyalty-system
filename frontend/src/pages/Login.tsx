@@ -1,80 +1,96 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { toast } from 'react-hot-toast'
+import { Button } from '@/components/atoms/Button'
+import { Input } from '@/components/atoms/Input'
+import {
+  FormField,
+  FormLabel,
+  FormMessage,
+} from '@/components/molecules/FormField'
+import { useAuth } from '@/hooks/useAuth'
 
-function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const { login } = useAuth();
+const loginSchema = z.object({
+  username: z.string().min(1, 'Vui lòng nhập tên đăng nhập'),
+  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+})
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await login(username, password);
-  };
+type LoginForm = z.infer<typeof loginSchema>
+
+export default function Login() {
+  const navigate = useNavigate()
+  const { login } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  const onSubmit = async (data: LoginForm) => {
+    try {
+      setIsLoading(true)
+      await login(data.username, data.password)
+      toast.success('Đăng nhập thành công')
+      navigate('/dashboard')
+    } catch (error) {
+      toast.error('Đăng nhập thất bại')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="username" className="sr-only">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Sign in
-            </button>
-          </div>
-
-          <div className="text-center">
-            <Link
-              to="/register"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              Don't have an account? Sign up
+    <div className="container flex min-h-screen max-w-mobile items-center justify-center">
+      <div className="w-full space-y-6 px-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900">
+            Đăng nhập vào Loyalty App
+          </h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Chưa có tài khoản?{' '}
+            <Link to="/register" className="font-medium text-primary-600">
+              Đăng ký ngay
             </Link>
-          </div>
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <FormField>
+            <FormLabel>Tên đăng nhập</FormLabel>
+            <Input
+              type="text"
+              {...register('username')}
+              error={!!errors.username}
+            />
+            {errors.username && (
+              <FormMessage>{errors.username.message}</FormMessage>
+            )}
+          </FormField>
+
+          <FormField>
+            <FormLabel>Mật khẩu</FormLabel>
+            <Input
+              type="password"
+              {...register('password')}
+              error={!!errors.password}
+            />
+            {errors.password && (
+              <FormMessage>{errors.password.message}</FormMessage>
+            )}
+          </FormField>
+
+          <Button type="submit" className="w-full" isLoading={isLoading}>
+            Đăng nhập
+          </Button>
         </form>
       </div>
     </div>
-  );
+  )
 }
-
-export default Login;

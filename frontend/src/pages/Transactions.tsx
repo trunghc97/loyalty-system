@@ -1,98 +1,127 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import { useState } from 'react'
+import { Button } from '@/components/atoms/Button'
+import { Input } from '@/components/atoms/Input'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/atoms/Card'
+import { TransactionList } from '@/components/organisms/TransactionList'
+import { usePoints } from '@/hooks/usePoints'
+import { Calendar } from 'lucide-react'
 
-interface Transaction {
-  id: string;
-  type: string;
-  amount: number;
-  description: string;
-  txHash: string;
-  createdAt: string;
-}
+export default function Transactions() {
+  const { points, transactions, isLoading } = usePoints()
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
-function Transactions() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const filteredTransactions = transactions.filter((transaction) => {
+    if (!startDate && !endDate) return true
 
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
+    const transactionDate = new Date(transaction.timestamp)
+    const start = startDate ? new Date(startDate) : null
+    const end = endDate ? new Date(endDate) : null
 
-  const fetchTransactions = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_JAVA_API_URL}/transactions`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      setTransactions(response.data.content);
-    } catch (error) {
-      toast.error('Failed to fetch transactions');
-    } finally {
-      setLoading(false);
+    if (start && end) {
+      return transactionDate >= start && transactionDate <= end
     }
-  };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">Loading...</div>
-      </div>
-    );
-  }
+    if (start) {
+      return transactionDate >= start
+    }
+
+    if (end) {
+      return transactionDate <= end
+    }
+
+    return true
+  })
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-4 py-5 sm:px-6">
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Transaction History</h3>
+    <div className="container max-w-mobile space-y-6 p-4">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold">Lịch sử giao dịch</h1>
+        <p className="text-gray-500">
+          Xem lại các giao dịch điểm của bạn
+        </p>
       </div>
-      <div className="border-t border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Description
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Transaction Hash
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {transactions.map((transaction) => (
-                <tr key={transaction.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {transaction.type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.amount} points
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.description}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="font-mono">{transaction.txHash}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(transaction.createdAt).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Số dư hiện tại</CardTitle>
+          <CardDescription>
+            Số điểm hiện có trong tài khoản của bạn
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-primary-600">
+            {points.toLocaleString()} điểm
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Lọc theo thời gian</CardTitle>
+          <CardDescription>
+            Chọn khoảng thời gian để xem giao dịch
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Từ ngày</label>
+              <div className="relative">
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+                <Calendar className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Đến ngày</label>
+              <div className="relative">
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+                <Calendar className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                setStartDate('')
+                setEndDate('')
+              }}
+            >
+              Đặt lại
+            </Button>
+            <Button className="flex-1">Lọc</Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Danh sách giao dịch</h2>
+          <span className="text-sm text-gray-500">
+            {filteredTransactions.length} giao dịch
+          </span>
         </div>
+        <TransactionList
+          transactions={filteredTransactions}
+          isLoading={isLoading}
+        />
       </div>
     </div>
-  );
+  )
 }
-
-export default Transactions;

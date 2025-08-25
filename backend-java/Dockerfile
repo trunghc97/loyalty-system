@@ -1,11 +1,30 @@
-FROM maven:3.8.4-openjdk-17-slim AS build
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests
+# Build stage
+FROM maven:3.9-eclipse-temurin-17 as build
 
-FROM openjdk:17-slim
 WORKDIR /app
+
+# Copy pom.xml
+COPY pom.xml .
+
+# Download dependencies
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY src ./src
+
+# Build the application
+RUN mvn package -DskipTests
+
+# Run stage
+FROM openjdk:21
+
+WORKDIR /app
+
+# Copy JAR file
 COPY --from=build /app/target/*.jar app.jar
+
+# Expose port
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Start the application
+CMD ["java", "-jar", "app.jar"]

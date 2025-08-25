@@ -1,17 +1,35 @@
 version: '3.8'
 
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_JAVA=http://localhost:3000/api/java
+      - VITE_API_GO=http://localhost:3000/api/go
+    depends_on:
+      - backend-java
+      - backend-go
+    networks:
+      - loyalty-network
+
   backend-java:
-    build: 
+    build:
       context: ./backend-java
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/loyalty
-      - JWT_SECRET=${JAVA_JWT_SECRET}
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/loyalty
+      - SPRING_DATA_MONGODB_DATABASE=loyalty
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000
+      - JWT_SECRET=c9c1b2f3e4a5d6b7c8a9e0f1d2c3b4a5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1
+      - BLOCKCHAIN_API_URL=http://backend-go:8081
     depends_on:
-      - mongo
+      - mongodb
     networks:
       - loyalty-network
 
@@ -22,29 +40,15 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - MONGO_URI=mongodb://mongo:27017/loyalty
-      - LOG_LEVEL=${GO_LOG_LEVEL}
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE=loyalty
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000
     depends_on:
-      - mongo
+      - mongodb
     networks:
       - loyalty-network
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - REACT_APP_JAVA_API_URL=http://localhost:8080
-      - REACT_APP_GO_API_URL=http://localhost:8081
-    depends_on:
-      - backend-java
-      - backend-go
-    networks:
-      - loyalty-network
-
-  mongo:
+  mongodb:
     image: mongo:latest
     ports:
       - "27017:27017"

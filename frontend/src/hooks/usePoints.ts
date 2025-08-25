@@ -1,64 +1,93 @@
-import { useState } from 'react';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from './useAuth'
 
-const API_URL = process.env.REACT_APP_JAVA_API_URL;
+interface PointsResponse {
+  balance: number
+  transactions: Array<{
+    id: string
+    type: 'EARN' | 'TRANSFER' | 'REDEEM' | 'RECEIVE'
+    amount: number
+    description: string
+    timestamp: string
+    status: 'success' | 'pending' | 'failed'
+  }>
+}
 
 export function usePoints() {
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
 
-  const getBalance = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/points/balance`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      return response.data;
-    } catch (error) {
-      toast.error('Failed to fetch balance');
-      return 0;
-    }
-  };
+  const { data, isLoading } = useQuery<PointsResponse>({
+    queryKey: ['points'],
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_API_JAVA}/points`, {
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+        },
+      })
+      if (!response.ok) {
+        throw new Error('Failed to fetch points')
+      }
+      return response.json()
+    },
+    enabled: !!user,
+  })
 
-  const earnPoints = async (amount: number, description?: string) => {
-    setLoading(true);
-    try {
-      await axios.post(
-        `${API_URL}/points/earn`,
-        { amount, description },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
-      toast.success('Points earned successfully');
-      return true;
-    } catch (error) {
-      toast.error('Failed to earn points');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const earnMutation = useMutation({
+    mutationFn: async ({ amount, description }: { amount: number; description: string }) => {
+      const response = await fetch(`${import.meta.env.VITE_API_JAVA}/points/earn`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user?.token}`,
+        },
+        body: JSON.stringify({ amount, description }),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to earn points')
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['points'] })
+    },
+  })
 
-  const transferPoints = async (amount: number, toUsername: string) => {
-    setLoading(true);
-    try {
-      await axios.post(
-        `${API_URL}/points/transfer`,
-        { amount, toUsername },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
-      toast.success('Points transferred successfully');
-      return true;
-    } catch (error) {
-      toast.error('Failed to transfer points');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const transferMutation = useMutation({
+    mutationFn: async ({
+      recipient,
+      amount,
+      description,
+    }: {
+      recipient: string
+      amount: number
+      description: string
+    }) => {
+      const response = await fetch(`${import.meta.env.VITE_API_JAVA}/points/transfer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user?.token}`,
+        },
+        body: JSON.stringify({ recipient, amount, description }),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to transfer points')
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['points'] })
+    },
+  })
 
   return {
-    loading,
-    getBalance,
-    earnPoints,
-    transferPoints
-  };
+    points: data?.balance ?? 0,
+    transactions: data?.transactions ?? [],
+    isLoading,
+    earnPoints: earnMutation.mutateAsync,
+    transferPoints: transferMutation.mutateAsync,
+    isEarning: earnMutation.isPending,
+    isTransferring: transferMutation.isPending,
+  }
 }

@@ -1,96 +1,121 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { toast } from 'react-hot-toast'
+import { Button } from '@/components/atoms/Button'
+import { Input } from '@/components/atoms/Input'
+import {
+  FormField,
+  FormLabel,
+  FormMessage,
+} from '@/components/molecules/FormField'
+import { useAuth } from '@/hooks/useAuth'
 
-function Register() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
-  const { register } = useAuth();
+const registerSchema = z
+  .object({
+    email: z.string().email('Email không hợp lệ'),
+    username: z.string().min(3, 'Tên đăng nhập phải có ít nhất 3 ký tự'),
+    password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Mật khẩu không khớp',
+    path: ['confirmPassword'],
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await register(username, password, email);
-  };
+type RegisterForm = z.infer<typeof registerSchema>
+
+export default function Register() {
+  const navigate = useNavigate()
+  const { register: registerUser } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterForm>({
+    resolver: zodResolver(registerSchema),
+  })
+
+  const onSubmit = async (data: RegisterForm) => {
+    try {
+      setIsLoading(true)
+      await registerUser(data.email, data.username, data.password)
+      toast.success('Đăng ký thành công')
+      navigate('/dashboard')
+    } catch (error) {
+      toast.error('Đăng ký thất bại')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="username" className="sr-only">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Sign up
-            </button>
-          </div>
-
-          <div className="text-center">
-            <Link
-              to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              Already have an account? Sign in
+    <div className="container flex min-h-screen max-w-mobile items-center justify-center">
+      <div className="w-full space-y-6 px-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900">
+            Đăng ký tài khoản mới
+          </h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Đã có tài khoản?{' '}
+            <Link to="/login" className="font-medium text-primary-600">
+              Đăng nhập
             </Link>
-          </div>
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <FormField>
+            <FormLabel>Email</FormLabel>
+            <Input type="email" {...register('email')} error={!!errors.email} />
+            {errors.email && <FormMessage>{errors.email.message}</FormMessage>}
+          </FormField>
+
+          <FormField>
+            <FormLabel>Tên đăng nhập</FormLabel>
+            <Input
+              type="text"
+              {...register('username')}
+              error={!!errors.username}
+            />
+            {errors.username && (
+              <FormMessage>{errors.username.message}</FormMessage>
+            )}
+          </FormField>
+
+          <FormField>
+            <FormLabel>Mật khẩu</FormLabel>
+            <Input
+              type="password"
+              {...register('password')}
+              error={!!errors.password}
+            />
+            {errors.password && (
+              <FormMessage>{errors.password.message}</FormMessage>
+            )}
+          </FormField>
+
+          <FormField>
+            <FormLabel>Xác nhận mật khẩu</FormLabel>
+            <Input
+              type="password"
+              {...register('confirmPassword')}
+              error={!!errors.confirmPassword}
+            />
+            {errors.confirmPassword && (
+              <FormMessage>{errors.confirmPassword.message}</FormMessage>
+            )}
+          </FormField>
+
+          <Button type="submit" className="w-full" isLoading={isLoading}>
+            Đăng ký
+          </Button>
         </form>
       </div>
     </div>
-  );
+  )
 }
-
-export default Register;
