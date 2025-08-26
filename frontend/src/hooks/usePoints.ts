@@ -20,7 +20,8 @@ export function usePoints() {
   const { data, isLoading } = useQuery<PointsResponse>({
     queryKey: ['points'],
     queryFn: async () => {
-      const response = await fetch(`${import.meta.env.VITE_API_JAVA}/points`, {
+      const API_URL = import.meta.env.VITE_API_JAVA || ''
+      const response = await fetch(`${API_URL}/points`, {
         headers: {
           Authorization: `Bearer ${user?.token}`,
         },
@@ -35,7 +36,8 @@ export function usePoints() {
 
   const earnMutation = useMutation({
     mutationFn: async ({ amount, description }: { amount: number; description: string }) => {
-      const response = await fetch(`${import.meta.env.VITE_API_JAVA}/points/earn`, {
+      const API_URL = import.meta.env.VITE_API_JAVA || ''
+      const response = await fetch(`${API_URL}/points/earn`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +65,8 @@ export function usePoints() {
       amount: number
       description: string
     }) => {
-      const response = await fetch(`${import.meta.env.VITE_API_JAVA}/points/transfer`, {
+      const API_URL = import.meta.env.VITE_API_JAVA || ''
+      const response = await fetch(`${API_URL}/points/transfer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -16,5 +16,14 @@ export default defineConfig({
   build: {
     outDir: 'build',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom'],
+        },
+      },
+    },
+    cssCodeSplit: true,
+    minify: 'esbuild',
   },
 })

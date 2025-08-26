@@ -6,13 +6,13 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies with exact versions from package-lock.json
+RUN npm ci --production=false
 
 # Copy source code
 COPY . .
 
-# Build the app
+# Build the app with production optimization
 RUN npm run build
 
 # Production stage

@@ -25,7 +25,8 @@ export const useAuth = create<AuthState>()(
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       login: async (username, password) => {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_JAVA}/api/java/auth/login`, {
+          const API_URL = import.meta.env.VITE_API_JAVA || ''
+          const response = await fetch(`${API_URL}/api/java/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -45,7 +46,8 @@ export const useAuth = create<AuthState>()(
       },
       register: async (email, username, password) => {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_JAVA}/api/java/auth/register`, {
+          const API_URL = import.meta.env.VITE_API_JAVA || ''
+          const response = await fetch(`${API_URL}/api/java/auth/register`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

@@ -11,7 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/points")
+@RequestMapping("/api/java/points")
 @RequiredArgsConstructor
 public class PointsController {
     private final PointsService pointsService;
