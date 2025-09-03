@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { login as loginApi, register as registerApi } from '@/services/api'
 
 interface User {
   id: string
@@ -25,43 +26,21 @@ export const useAuth = create<AuthState>()(
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       login: async (username, password) => {
         try {
-          const API_URL = import.meta.env.VITE_API_JAVA || ''
-          const response = await fetch(`${API_URL}/api/java/auth/login`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
-          })
-
-          if (!response.ok) {
-            throw new Error('Login failed')
-          }
-
-          const data = await response.json()
-          set({ user: data, isAuthenticated: true })
+          const response = await loginApi({ username: username, password })
+          set({ user: response.data, isAuthenticated: true })
         } catch (error) {
           throw error
         }
       },
       register: async (email, username, password) => {
         try {
-          const API_URL = import.meta.env.VITE_API_JAVA || ''
-          const response = await fetch(`${API_URL}/api/java/auth/register`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, username, password }),
-          })
-
-          if (!response.ok) {
-            throw new Error('Registration failed')
-          }
-
-          const data = await response.json()
-          set({ user: data, isAuthenticated: true })
+          console.log('Starting registration process...')
+          console.log('Data:', { email, username, password: '***' })
+          const response = await registerApi({ email, username, password })
+          console.log('Registration successful:', response.data)
+          set({ user: response.data, isAuthenticated: true })
         } catch (error) {
+          console.error('Registration failed:', error)
           throw error
         }
       },

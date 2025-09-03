@@ -13,17 +13,17 @@ import {
 } from '@/components/molecules/FormField'
 import { useAuth } from '@/hooks/useAuth'
 
-const registerSchema = z
-  .object({
-    email: z.string().email('Email không hợp lệ'),
-    username: z.string().min(3, 'Tên đăng nhập phải có ít nhất 3 ký tự'),
-    password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Mật khẩu không khớp',
-    path: ['confirmPassword'],
-  })
+const registerSchema = z.object({
+  email: z.string().email('Email không hợp lệ'),
+  username: z.string().min(1, 'Vui lòng nhập tên đăng nhập'),
+  password: z.string()
+    .min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
+    .max(50, 'Mật khẩu không được quá 50 ký tự'),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Mật khẩu xác nhận không khớp",
+  path: ["confirmPassword"],
+})
 
 type RegisterForm = z.infer<typeof registerSchema>
 
@@ -47,7 +47,8 @@ export default function Register() {
       toast.success('Đăng ký thành công')
       navigate('/dashboard')
     } catch (error) {
-      toast.error('Đăng ký thất bại')
+      console.error('Registration error:', error)
+      toast.error('Đăng ký thất bại. Vui lòng thử lại.')
     } finally {
       setIsLoading(false)
     }
@@ -58,7 +59,7 @@ export default function Register() {
       <div className="w-full space-y-6 px-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900">
-            Đăng ký tài khoản mới
+            Đăng ký tài khoản
           </h1>
           <p className="mt-2 text-sm text-gray-600">
             Đã có tài khoản?{' '}
@@ -71,8 +72,14 @@ export default function Register() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <FormField>
             <FormLabel>Email</FormLabel>
-            <Input type="email" {...register('email')} error={!!errors.email} />
-            {errors.email && <FormMessage>{errors.email.message}</FormMessage>}
+            <Input
+              type="email"
+              {...register('email')}
+              error={!!errors.email}
+            />
+            {errors.email && (
+              <FormMessage>{errors.email.message}</FormMessage>
+            )}
           </FormField>
 
           <FormField>

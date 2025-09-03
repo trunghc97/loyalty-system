@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Home,
   Gift,
@@ -11,6 +11,7 @@ import {
 import { useState } from 'react'
 import { Button } from '../atoms/Button'
 import { cn } from '@/utils/cn'
+import { useAuth } from '@/hooks/useAuth'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -23,6 +24,13 @@ const navigation = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const { logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white lg:top-0 lg:border-b lg:border-t-0">
@@ -60,7 +68,7 @@ export function Navbar() {
         </Button>
 
         <div className="hidden items-center gap-4 lg:flex">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={handleLogout}>
             <LogOut className="h-5 w-5" />
           </Button>
         </div>
@@ -82,6 +90,13 @@ export function Navbar() {
               {item.name}
             </Link>
           ))}
+          <button
+            onClick={handleLogout}
+            className="flex flex-col items-center rounded-lg p-2 text-xs text-gray-600"
+          >
+            <LogOut className="mb-1 h-5 w-5" />
+            Đăng xuất
+          </button>
         </div>
       </div>
     </nav>

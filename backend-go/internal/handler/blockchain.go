@@ -1,96 +1,103 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"fmt"
+	"time"
+
 	"github.com/loyalty/backend-go/internal/model"
-	"github.com/loyalty/backend-go/internal/service"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type BlockchainHandler struct {
-	service *service.BlockchainService
+	// Add blockchain client or mock service here
 }
 
-func NewBlockchainHandler(service *service.BlockchainService) *BlockchainHandler {
-	return &BlockchainHandler{service: service}
+func NewBlockchainHandler() *BlockchainHandler {
+	return &BlockchainHandler{}
 }
 
-func (h *BlockchainHandler) AnchorReceipt(c *fiber.Ctx) error {
-	var tx model.Transaction
-	if err := c.BodyParser(&tx); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request body",
-		})
-	}
-
-	txHash, err := h.service.AnchorReceipt(&tx)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return c.JSON(fiber.Map{
-		"txHash": txHash,
-	})
-}
-
+// Trade handles point trading on blockchain
 func (h *BlockchainHandler) Trade(c *fiber.Ctx) error {
-	var tx model.Transaction
-	if err := c.BodyParser(&tx); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request body",
+	var req model.BlockchainRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.BlockchainResponse{
+			Status: "FAILED",
+			Error:  "Invalid request format",
 		})
 	}
 
-	txHash, err := h.service.Trade(&tx)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+	// Mock blockchain transaction
+	txHash := fmt.Sprintf("0x%s", uuid.New().String())
 
-	return c.JSON(fiber.Map{
-		"txHash": txHash,
+	// In real implementation, this would call blockchain SDK
+	return c.JSON(model.BlockchainResponse{
+		TxHash: txHash,
+		Status: "SUCCESS",
 	})
 }
 
+// Pay handles point payment on blockchain
 func (h *BlockchainHandler) Pay(c *fiber.Ctx) error {
-	var tx model.Transaction
-	if err := c.BodyParser(&tx); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request body",
+	var req model.BlockchainRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.BlockchainResponse{
+			Status: "FAILED",
+			Error:  "Invalid request format",
 		})
 	}
 
-	txHash, err := h.service.Pay(&tx)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+	// Mock blockchain transaction
+	txHash := fmt.Sprintf("0x%s", uuid.New().String())
 
-	return c.JSON(fiber.Map{
-		"txHash": txHash,
+	// In real implementation, this would call blockchain SDK
+	return c.JSON(model.BlockchainResponse{
+		TxHash: txHash,
+		Status: "SUCCESS",
 	})
 }
 
+// AnchorReceipt anchors transaction receipt on blockchain
+func (h *BlockchainHandler) AnchorReceipt(c *fiber.Ctx) error {
+	var req model.BlockchainRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.BlockchainResponse{
+			Status: "FAILED",
+			Error:  "Invalid request format",
+		})
+	}
+
+	// Mock blockchain transaction
+	txHash := fmt.Sprintf("0x%s", uuid.New().String())
+
+	// In real implementation, this would call blockchain SDK
+	return c.JSON(model.BlockchainResponse{
+		TxHash: txHash,
+		Status: "SUCCESS",
+	})
+}
+
+// GetStatus gets transaction status from blockchain
 func (h *BlockchainHandler) GetStatus(c *fiber.Ctx) error {
-	txHash := c.Query("txId")
-	if txHash == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "txId is required",
+	txID := c.Query("txId")
+	if txID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(model.BlockchainResponse{
+			Status: "FAILED",
+			Error:  "Missing txId parameter",
 		})
 	}
 
-	status, err := h.service.GetStatus(txHash)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+	// Mock transaction status check
+	// In real implementation, this would query blockchain node
+	mockTx := model.MockBlockchainTx{
+		TxHash:    txID,
+		Status:    "SUCCESS",
+		Timestamp: time.Now().Unix(),
 	}
 
-	return c.JSON(fiber.Map{
-		"txHash": txHash,
-		"status": status,
+	return c.JSON(model.BlockchainResponse{
+		TxHash: mockTx.TxHash,
+		Status: mockTx.Status,
 	})
 }

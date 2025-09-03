@@ -21,12 +21,17 @@ const queryClient = new QueryClient()
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
-  return isAuthenticated ? children : <Navigate to="/login" />
+  return isAuthenticated ? children : <Navigate to="/login" replace />
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
-  return !isAuthenticated ? children : <Navigate to="/dashboard" />
+  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />
+}
+
+function AuthRoute() {
+  const { isAuthenticated } = useAuth()
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />
 }
 
 export default function App() {
@@ -135,9 +140,11 @@ export default function App() {
               }
             />
 
-            {/* Redirect */}
-            <Route path="/" element={<Navigate to="/dashboard" />} />
-            <Route path="*" element={<Navigate to="/dashboard" />} />
+            {/* Root route */}
+            <Route path="/" element={<AuthRoute />} />
+            
+            {/* Catch all */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
       </BrowserRouter>

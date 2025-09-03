@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/java")
+@RequestMapping("/api/vouchers")
 @RequiredArgsConstructor
 public class VoucherController {
     private final VoucherRepository voucherRepository;
 
-    @GetMapping("/vouchers")
+    @GetMapping
     public ResponseEntity<List<Voucher>> getVouchers(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(voucherRepository.findByActiveTrue());
     }

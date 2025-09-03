@@ -1,19 +1,28 @@
-spring:
-  data:
-    mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/loyalty}
-      database: ${SPRING_DATA_MONGODB_DATABASE:loyalty}
-
-jwt:
-  secret: ${JWT_SECRET}
-  token-validity-in-seconds: 86400
-
 server:
   port: 8080
 
-cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+spring:
+  data:
+    mongodb:
+      host: mongodb
+      port: 27017
+      database: loyalty
+      authentication-database: admin
 
 blockchain:
-  api:
-    url: ${BLOCKCHAIN_API_URL:http://backend-go:8081}
+  service:
+    url: http://backend-go:8081
+
+jwt:
+  secret: your-secret-key
+  expiration: 86400000 # 24 hours
+
+rsa:
+  private-key: classpath:keys/private.key
+  public-key: classpath:keys/public.key
+
+logging:
+  level:
+    org.springframework.web: INFO
+    com.loyalty: DEBUG
+    org.mongodb: INFO

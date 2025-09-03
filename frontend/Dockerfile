@@ -13,7 +13,7 @@ RUN npm ci --production=false
 COPY . .
 
 # Build the app with production optimization
-RUN npm run build
+RUN npm run build || (cat /app/.npm/_logs/*-debug.log && exit 1)
 
 # Production stage
 FROM nginx:alpine

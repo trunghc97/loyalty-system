@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from './useAuth'
+import { getBalance, getTransactionHistory, earnPoints as earnPointsApi, transferPoints as transferPointsApi } from '@/services/api'
 
 interface PointsResponse {
   balance: number
@@ -20,35 +21,30 @@ export function usePoints() {
   const { data, isLoading } = useQuery<PointsResponse>({
     queryKey: ['points'],
     queryFn: async () => {
-      const API_URL = import.meta.env.VITE_API_JAVA || ''
-      const response = await fetch(`${API_URL}/points`, {
-        headers: {
-          Authorization: `Bearer ${user?.token}`,
-        },
-      })
-      if (!response.ok) {
-        throw new Error('Failed to fetch points')
+      const [balanceResponse, historyResponse] = await Promise.all([
+        getBalance(),
+        getTransactionHistory()
+      ])
+      
+      return {
+        balance: balanceResponse.data,
+        transactions: historyResponse.data.map((tx: any) => ({
+          id: tx.id,
+          type: tx.type,
+          amount: tx.amount,
+          description: tx.description,
+          timestamp: tx.timestamp,
+          status: tx.status.toLowerCase()
+        }))
       }
-      return response.json()
     },
     enabled: !!user,
   })
 
   const earnMutation = useMutation({
     mutationFn: async ({ amount, description }: { amount: number; description: string }) => {
-      const API_URL = import.meta.env.VITE_API_JAVA || ''
-      const response = await fetch(`${API_URL}/points/earn`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({ amount, description }),
-      })
-      if (!response.ok) {
-        throw new Error('Failed to earn points')
-      }
-      return response.json()
+      const response = await earnPointsApi({ amount, description })
+      return response.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['points'] })
@@ -65,19 +61,8 @@ export function usePoints() {
       amount: number
       description: string
     }) => {
-      const API_URL = import.meta.env.VITE_API_JAVA || ''
-      const response = await fetch(`${API_URL}/points/transfer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({ recipient, amount, description }),
-      })
-      if (!response.ok) {
-        throw new Error('Failed to transfer points')
-      }
-      return response.json()
+      const response = await transferPointsApi(recipient, { amount, description })
+      return response.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['points'] })

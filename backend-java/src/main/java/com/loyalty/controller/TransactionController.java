@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/java")
+@RequestMapping("/api/transactions")
 @RequiredArgsConstructor
 public class TransactionController {
     private final TransactionRepository transactionRepository;
 
-    @GetMapping("/transactions")
+    @GetMapping
     public ResponseEntity<Page<Transaction>> getTransactions(
             @AuthenticationPrincipal User user,
             Pageable pageable) {

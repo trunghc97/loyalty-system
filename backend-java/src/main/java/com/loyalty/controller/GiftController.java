@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/java")
+@RequestMapping("/api/gifts")
 @RequiredArgsConstructor
 public class GiftController {
     private final GiftRepository giftRepository;
 
-    @GetMapping("/gifts")
+    @GetMapping
     public ResponseEntity<List<Gift>> getGifts() {
         return ResponseEntity.ok(giftRepository.findByActiveTrue());
     }

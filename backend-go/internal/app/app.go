@@ -1,56 +1,41 @@
 package app
 
 import (
-	"fmt"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/loyalty/backend-go/internal/config"
 	"github.com/loyalty/backend-go/internal/handler"
-	"github.com/loyalty/backend-go/internal/repository"
-	"github.com/loyalty/backend-go/internal/service"
-	"github.com/rs/zerolog/log"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 type App struct {
-	config *config.Config
-	fiber  *fiber.App
+	fiber *fiber.App
 }
 
-func New(cfg *config.Config) *App {
+func New() *App {
 	app := &App{
-		config: cfg,
-		fiber:  fiber.New(),
+		fiber: fiber.New(),
 	}
 
-	app.setup()
+	// Middleware
+	app.fiber.Use(logger.New())
+	app.fiber.Use(recover.New())
+
+	// Initialize handlers
+	blockchainHandler := handler.NewBlockchainHandler()
+
+	// Setup routes
+	blockchain := app.fiber.Group("/blockchain")
+	{
+		blockchain.Post("/trade", blockchainHandler.Trade)
+		blockchain.Post("/pay", blockchainHandler.Pay)
+		blockchain.Post("/anchor-receipt", blockchainHandler.AnchorReceipt)
+		blockchain.Get("/status", blockchainHandler.GetStatus)
+	}
+
 	return app
 }
 
-func (a *App) setup() {
-	// Middleware
-	a.fiber.Use(cors.New())
-	a.fiber.Use(logger.New())
-
-	// MongoDB repository
-	repo := repository.NewMongoRepository(a.config.MongoURI)
-
-	// Services
-	blockchainService := service.NewBlockchainService(repo)
-
-	// Handlers
-	blockchainHandler := handler.NewBlockchainHandler(blockchainService)
-
-	// Routes
-	api := a.fiber.Group("/blockchain")
-	api.Post("/anchor-receipt", blockchainHandler.AnchorReceipt)
-	api.Post("/trade", blockchainHandler.Trade)
-	api.Post("/pay", blockchainHandler.Pay)
-	api.Get("/status", blockchainHandler.GetStatus)
-}
-
-func (a *App) Start() error {
-	addr := fmt.Sprintf(":%d", a.config.Port)
-	log.Info().Msgf("Starting server on %s", addr)
+func (a *App) Start(addr string) error {
 	return a.fiber.Listen(addr)
 }

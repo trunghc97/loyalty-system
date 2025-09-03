@@ -21,6 +21,7 @@ import {
 import { usePoints } from '@/hooks/usePoints'
 import { ExternalLink } from 'lucide-react'
 import { parseNumber } from '@/utils/number'
+import { tradePoints } from '@/services/api'
 
 const tradeSchema = z.object({
   amount: z
@@ -56,24 +57,8 @@ export default function Trade() {
   const onSubmit = async (data: TradeForm) => {
     try {
       setIsLoading(true)
-      // TODO: Call API to trade points for tokens
-      const response = await fetch(`${import.meta.env.VITE_API_GO}/blockchain/trade`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: data.amount,
-          walletAddress: data.walletAddress,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Trade failed')
-      }
-
-      const result = await response.json()
-      setTxHash(result.txHash)
+      const response = await tradePoints({ amount: data.amount })
+      setTxHash(response.data.blockchainTx)
       toast.success('Giao dịch thành công')
     } catch (error) {
       toast.error('Giao dịch thất bại')
