@@ -5,8 +5,8 @@ import logging
 from typing import List, Dict
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from .llm import OllamaClient
-from .guard import GuardValidator
+from llm import OllamaClient
+from guard import GuardValidator
 
 # Configure logging
 logging.basicConfig(
@@ -25,7 +25,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
 
-@app.post("/api/llm/chat", response_model=ChatResponse)
+@app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """
     Chat endpoint that validates input/output and forwards requests to Ollama.

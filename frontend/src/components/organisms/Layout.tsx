@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { Navbar } from './Navbar'
 import { useAuth } from '@/hooks/useAuth'
+import { ChatbotLLM } from '@/components/molecules/ChatbotLLM'
 
 export function Layout() {
   const { isAuthenticated } = useAuth()
@@ -27,6 +28,11 @@ export function Layout() {
           },
         }}
       />
+      {isAuthenticated && (
+        <ChatbotLLM
+          isBubbleMode={true}
+        />
+      )}
     </div>
   )
 }
