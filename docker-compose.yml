@@ -57,9 +57,38 @@ services:
     networks:
       - loyalty-network
 
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - loyalty-network
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        ollama serve &
+        sleep 10
+        ollama pull phi3
+        wait
+
+  llm-service:
+    build:
+      context: ./llm-guard-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8000"
+    environment:
+      - OLLAMA_API_URL=http://ollama:11434
+      - OLLAMA_MODEL=phi3
+    depends_on:
+      - ollama
+    networks:
+      - loyalty-network
+
 networks:
   loyalty-network:
     driver: bridge
 
 volumes:
   mongodb_data:
+  ollama_data:
