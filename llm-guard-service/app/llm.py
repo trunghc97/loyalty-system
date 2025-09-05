@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 
 class OllamaClient:
     def __init__(self):
-        self.base_url = os.getenv("OLLAMA_API_URL", "http://ollama:11434")
-        self.model = os.getenv("OLLAMA_MODEL", "phi3")
+        self.base_url = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
+        self.model = os.getenv("OLLAMA_MODEL", "meta-llama-3-8b-instruct")
         
         # Configure retry strategy
         retry_strategy = Retry(
@@ -50,7 +50,20 @@ class OllamaClient:
         try:
             # Thêm system prompt tối ưu
             messages_with_lang = [
-                {"role": "system", "content": "Trả lời bằng tiếng Việt ngắn gọn."},
+                {
+                    "role": "system",
+                    "content": (
+                        "Bạn là một trợ lý AI, hãy **trả lời hoàn toàn bằng tiếng Việt** cho câu hỏi hoặc yêu cầu dưới đây.\n"
+                        "\n"
+                        "- Văn phong lịch sự, tự nhiên, thân thiện, ngắn gọn, dễ hiểu với người Việt Nam.\n"
+                        "- Tránh dùng từ ngữ lạ, từ phiên âm hoặc các câu trả lời không tự nhiên.\n"
+                        "- Nếu câu hỏi không rõ ràng hoặc không thuộc phạm vi hiểu biết, hãy trả lời: “Xin lỗi, tôi chưa rõ ý bạn. Bạn có thể đặt câu hỏi rõ hơn được không?”\n"
+                        "- Không trả lời bằng tiếng Anh hoặc các ngôn ngữ khác.\n"
+                        "- Nếu cần thiết, hãy giải thích ngắn gọn, không diễn giải dài dòng.\n"
+                        "- Luôn đảm bảo câu trả lời rõ ràng, dễ đọc."
+                        "Câu hỏi của người dùng:"
+                    )
+                },
                 *messages
             ]
             
