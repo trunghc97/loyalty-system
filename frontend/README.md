@@ -1,140 +1,91 @@
-# Loyalty System Frontend
+# Loyalty System Frontend (Angular)
 
-Ứng dụng frontend cho hệ thống Loyalty Points được xây dựng bằng React, TypeScript và Tailwind CSS.
+## Prerequisites
 
-## Tính năng
+- Node.js 18+
+- Angular CLI 17+
+- Docker & Docker Compose
 
-- Đăng nhập/Đăng ký tài khoản
-- Quản lý điểm thưởng (tích điểm, chuyển điểm, đổi điểm)
-- Quản lý voucher và quà tặng
-- Lịch sử giao dịch
-- Tích hợp blockchain cho giao dịch điểm
-- Giao diện responsive, tối ưu cho mobile và iframe
+## Development
 
-## Yêu cầu hệ thống
-
-- Node.js 20+
-- npm 10+
-
-## Cài đặt và chạy
-
-1. Clone repository:
 ```bash
-git clone https://github.com/your-username/loyalty-system.git
-cd loyalty-system/frontend
-```
-
-2. Cài đặt dependencies:
-```bash
+# Install dependencies
 npm install
-```
 
-3. Tạo file .env từ .env.example và cập nhật các biến môi trường:
-```bash
-cp .env.example .env
-```
+# Start development server
+npm start
 
-4. Chạy môi trường development:
-```bash
-npm run dev
-```
-
-5. Build cho production:
-```bash
+# Build for production
 npm run build
-```
 
-6. Preview bản build:
-```bash
-npm run preview
-```
-
-## Cấu hình môi trường
-
-File `.env` cần có các biến môi trường sau:
-
-```env
-VITE_API_JAVA=http://localhost:8080
-VITE_API_GO=http://localhost:8081
+# Run tests
+npm test
 ```
 
 ## Docker
 
-Build image:
 ```bash
-docker build -t loyalty-frontend .
+# Build and run with Docker Compose
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f frontend
+
+# Stop services
+docker-compose down
 ```
 
-Chạy container:
+## Architecture
+
+### Components Structure
+```
+src/app/
+├── components/
+│   ├── atoms/          # Basic reusable components
+│   │   ├── button.component.ts
+│   │   ├── card.component.ts
+│   │   ├── input.component.ts
+│   │   └── badge.component.ts
+│   └── molecules/      # Composite components
+│       ├── form-field.component.ts
+│       ├── points-card.component.ts
+│       └── chatbot-llm.component.ts
+├── pages/              # Page components with lazy loading
+│   ├── dashboard/
+│   └── login/
+├── services/           # Angular services
+│   ├── api.service.ts
+│   ├── auth.service.ts
+│   ├── points.service.ts
+│   └── llm.service.ts
+├── interceptors/       # HTTP interceptors
+└── guards/            # Route guards
+```
+
+### Key Features
+- ✅ Reactive Forms with validation
+- ✅ RxJS for state management
+- ✅ Lazy loading modules
+- ✅ HTTP interceptors for authentication
+- ✅ Tailwind CSS for styling
+- ✅ TypeScript strict mode
+- ✅ Docker containerization
+
+## API Integration
+
+The frontend communicates with the backend through REST APIs:
+
+- **Authentication**: `/api/auth/login`, `/api/auth/register`
+- **Points**: `/api/points/balance`, `/api/points/history`
+- **LLM Chat**: `/api/llm/chat`
+
+## Environment Variables
+
 ```bash
-docker run -p 80:80 loyalty-frontend
+# API Base URL (configured in services)
+API_BASE_URL=/api
 ```
 
-## Nhúng vào iframe
+## Deployment
 
-Để nhúng ứng dụng vào iframe, sử dụng code sau:
-
-```html
-<iframe 
-  src="http://your-domain" 
-  style="width: 100%; max-width: 480px; height: 100vh; border: none;"
-  title="Loyalty System"
-></iframe>
-```
-
-Lưu ý:
-- Đặt max-width: 480px để tối ưu hiển thị trên mobile
-- Ứng dụng đã được thiết kế để hoạt động tốt trong iframe
-- Đảm bảo domain của ứng dụng được phép nhúng vào trang web của bạn (CORS policy)
-
-## Cấu trúc thư mục
-
-```
-src/
-  ├── components/     # Shared components
-  │   ├── atoms/     # Basic UI components
-  │   ├── molecules/ # Composite components
-  │   └── organisms/ # Complex components
-  ├── hooks/         # Custom hooks
-  ├── pages/         # Page components
-  ├── services/      # API services
-  ├── types/         # TypeScript types
-  ├── utils/         # Helper functions
-  ├── App.tsx        # Root component
-  └── main.tsx       # Entry point
-```
-
-## Coding Style
-
-- Sử dụng ESLint và Prettier cho code formatting
-- Tuân thủ TypeScript strict mode
-- Sử dụng Tailwind CSS cho styling
-- Atomic Design cho component structure
-
-## Tối ưu hiệu năng
-
-- Code splitting với React Router
-- Lazy loading cho các components lớn
-- Caching API calls với React Query
-- Gzip compression trên Nginx
-- Caching static assets
-
-## Bảo mật
-
-- HTTPS bắt buộc cho production
-- Security headers được cấu hình trong Nginx
-- Input validation với Zod
-- XSS protection với React
-- CORS policy được cấu hình
-
-## Contributing
-
-1. Fork repository
-2. Tạo branch mới (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add some amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Tạo Pull Request
-
-## License
-
-MIT License
+The application is containerized and can be deployed using Docker Compose. The production build is optimized with Angular CLI's build optimizer.
