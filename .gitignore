@@ -9,13 +9,7 @@ frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
 
-frontend-react-backup/node_modules/
-frontend-react-backup/build/
-frontend-react-backup/dist/
-frontend-react-backup/.env
-frontend-react-backup/.env.local
-frontend-react-backup/.env.*.local
-frontend-react-backup/npm-debug.log*
+frontend-react-backup/
 
 # Backend Java
 backend-java/target/
