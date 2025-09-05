@@ -3,10 +3,19 @@ Module for interacting with Ollama API.
 """
 import os
 import time
+import json
+import logging
 import requests
 from typing import List, Dict, Any
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
+# Cấu hình logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class OllamaClient:
     def __init__(self):
@@ -27,35 +36,68 @@ class OllamaClient:
         self.session.mount("http://", adapter)
         self.session.mount("https://", adapter)
         
-    def chat(self, messages: List[Dict[str, str]]) -> tuple[bool, str, Any]:
+    def chat(self, messages: List[Dict[str, str]], timeout: int = 180) -> tuple[bool, str, Any]:
         """
-        Send chat request to Ollama API.
+        Gửi yêu cầu chat đến Ollama API với xử lý timeout tối ưu.
         
         Args:
-            messages: List of message dictionaries with role and content
+            messages: Danh sách tin nhắn với role và content
+            timeout: Thời gian chờ tối đa cho mỗi request (giây)
             
         Returns:
-            tuple[bool, str, Any]: (success, error_message, response_data)
+            tuple[bool, str, Any]: (thành_công, thông_báo_lỗi, dữ_liệu_phản_hồi)
         """
         try:
+            # Thêm system prompt tối ưu
+            messages_with_lang = [
+                {"role": "system", "content": "Trả lời bằng tiếng Việt ngắn gọn."},
+                *messages
+            ]
+            
+            # Tăng timeout cho câu hỏi dài
+            msg_length = sum(len(m.get("content", "")) for m in messages)
+            dynamic_timeout = min(timeout, max(90, msg_length // 50))  # 1s cho mỗi 50 ký tự
+
+            # Chuẩn bị request data cân bằng tốc độ và chất lượng
+            request_data = {
+                "model": self.model,
+                "messages": messages_with_lang,
+                "stream": False,
+                "options": {
+                    "temperature": 0.4,  # cân bằng tốc độ và độ chính xác
+                    "num_predict": 256,  # output vừa đủ
+                    "top_k": 20,  # cân bằng
+                    "top_p": 0.9,  # cân bằng
+                    "num_thread": 8,  # tối ưu cho M1
+                    "num_ctx": 2048,  # context hợp lý
+                    "repeat_penalty": 1.1,  # tránh lặp
+                    "repeat_last_n": 32   # tránh lặp trong context ngắn
+                }
+            }
+            
+            # Log request
+            logger.info(f"Gửi request đến Ollama API: {json.dumps(request_data, ensure_ascii=False)}")
+            
+            # Thực hiện request với timeout động
             response = self.session.post(
                 f"{self.base_url}/api/chat",
-                json={
-                    "model": self.model,
-                    "messages": messages,
-                    "stream": False
-                },
-                timeout=60
+                json=request_data,
+                timeout=dynamic_timeout
             )
             
             if response.status_code != 200:
-                return False, f"Ollama API error: {response.status_code}", None
-                
-            return True, "", response.json()
+                error_msg = f"Lỗi API (mã {response.status_code}): Vui lòng thử lại sau"
+                logger.error(f"{error_msg}\nResponse: {response.text}")
+                return False, error_msg, None
+            
+            # Log response
+            response_data = response.json()
+            logger.info(f"Nhận response từ Ollama API: {json.dumps(response_data, ensure_ascii=False)}")
+            return True, "", response_data
             
         except requests.exceptions.Timeout:
-            return False, "Request to Ollama API timed out", None
+            return False, "Quá thời gian chờ phản hồi. Vui lòng thử lại với câu hỏi ngắn hơn", None
         except requests.exceptions.RequestException as e:
-            return False, f"Error calling Ollama API: {str(e)}", None
+            return False, f"Lỗi kết nối: {str(e)}", None
         except Exception as e:
-            return False, f"Unexpected error: {str(e)}", None
+            return False, f"Lỗi hệ thống: {str(e)}", None

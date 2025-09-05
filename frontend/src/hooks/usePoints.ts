@@ -39,6 +39,13 @@ export function usePoints() {
       }
     },
     enabled: !!user,
+    // Tắt mọi auto-refetch, chỉ fetch một lần khi mount
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity,
+    gcTime: 5 * 60 * 1000,
   })
 
   const earnMutation = useMutation({
@@ -70,8 +77,8 @@ export function usePoints() {
   })
 
   return {
-    points: data?.balance ?? 0,
-    transactions: data?.transactions ?? [],
+    points: (data as PointsResponse)?.balance ?? 0,
+    transactions: (data as PointsResponse)?.transactions ?? [],
     isLoading,
     earnPoints: earnMutation.mutateAsync,
     transferPoints: transferMutation.mutateAsync,

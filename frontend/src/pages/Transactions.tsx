@@ -12,12 +12,21 @@ import { TransactionList } from '@/components/organisms/TransactionList'
 import { usePoints } from '@/hooks/usePoints'
 import { Calendar } from 'lucide-react'
 
+interface Transaction {
+  id: string
+  type: 'EARN' | 'TRANSFER' | 'REDEEM' | 'RECEIVE'
+  amount: number
+  description: string
+  timestamp: string
+  status: 'success' | 'pending' | 'failed'
+}
+
 export default function Transactions() {
   const { points, transactions, isLoading } = usePoints()
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
 
-  const filteredTransactions = transactions.filter((transaction) => {
+  const filteredTransactions = transactions.filter((transaction: Transaction) => {
     if (!startDate && !endDate) return true
 
     const transactionDate = new Date(transaction.timestamp)
