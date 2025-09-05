@@ -16,7 +16,7 @@ COPY src ./src
 RUN mvn package -DskipTests
 
 # Run stage
-FROM openjdk:21
+FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 

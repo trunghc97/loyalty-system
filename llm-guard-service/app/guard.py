@@ -20,7 +20,7 @@ class GuardValidator:
     def __init__(self):
         # Input scanners
         self.input_scanners = [
-            Language(valid_languages=["en", "vi"], threshold=0.7),
+            Language(valid_languages=["en", "vi"], threshold=0.5),
             Toxicity(threshold=0.8),
             BanTopics(topics=["violence", "nsfw"]),
             PromptInjection(),

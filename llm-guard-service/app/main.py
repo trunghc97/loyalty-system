@@ -15,6 +15,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def log_request_details(messages: List[Dict[str, str]], error: str = None):
+    """Log request details and optional error."""
+    try:
+        last_message = messages[-1] if messages else {}
+        log_data = {
+            "last_message_role": last_message.get("role", "unknown"),
+            "last_message_length": len(last_message.get("content", "")),
+            "total_messages": len(messages),
+            "error": error
+        }
+        if error:
+            logger.error(f"Request failed: {log_data}")
+        else:
+            logger.info(f"Processing request: {log_data}")
+    except Exception as e:
+        logger.error(f"Error logging request details: {str(e)}")
+
 app = FastAPI(title="LLM Guard Service")
 ollama_client = OllamaClient()
 guard = GuardValidator()
@@ -31,28 +48,32 @@ async def chat(request: ChatRequest):
     Chat endpoint that validates input/output and forwards requests to Ollama.
     """
     try:
+        # Log incoming request
+        log_request_details(request.messages)
+        
         # Validate input
         is_valid, error_msg = guard.validate_input(request.messages)
         if not is_valid:
-            logger.warning(f"Input validation failed: {error_msg}")
+            log_request_details(request.messages, error=f"Input validation: {error_msg}")
             raise HTTPException(status_code=400, detail=error_msg)
 
         # Call Ollama
         success, error_msg, response_data = ollama_client.chat(request.messages)
         if not success:
-            logger.error(f"Ollama API error: {error_msg}")
+            log_request_details(request.messages, error=f"Ollama API: {error_msg}")
             raise HTTPException(status_code=500, detail=error_msg)
 
         # Get response content
         response_content = response_data.get("message", {}).get("content", "")
         if not response_content:
+            log_request_details(request.messages, error="Empty response from Ollama")
             raise HTTPException(status_code=500, detail="Empty response from Ollama")
 
         # Validate output
         latest_prompt = request.messages[-1]["content"]
         is_valid, error_msg = guard.validate_output(latest_prompt, response_content)
         if not is_valid:
-            logger.warning(f"Output validation failed: {error_msg}")
+            log_request_details(request.messages, error=f"Output validation: {error_msg}")
             raise HTTPException(status_code=400, detail=error_msg)
 
         return ChatResponse(response=response_content)
@@ -60,7 +81,9 @@ async def chat(request: ChatRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Unexpected error in chat endpoint")
+        error_msg = f"Unexpected error in chat endpoint: {str(e)}"
+        logger.exception(error_msg)
+        log_request_details(request.messages, error=error_msg)
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
