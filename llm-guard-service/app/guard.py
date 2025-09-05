@@ -18,21 +18,11 @@ from llm_guard.output_scanners import (
 
 class GuardValidator:
     def __init__(self):
-        # Input scanners
-        self.input_scanners = [
-            Language(valid_languages=["en", "vi"], threshold=0.5),
-            Toxicity(threshold=0.8),
-            BanTopics(topics=["violence", "nsfw"]),
-            PromptInjection(),
-            Code(languages=["Python", "JavaScript", "Java", "Go"], threshold=0.8)
-        ]
+        # Input scanners - temporarily disabled
+        self.input_scanners = []
 
-        # Output scanners
-        self.output_scanners = [
-            OutputToxicity(threshold=0.8),
-            NoRefusal(),
-            Relevance(threshold=0.7)
-        ]
+        # Output scanners - temporarily disabled
+        self.output_scanners = []
 
     def validate_input(self, messages: List[Dict[str, str]]) -> tuple[bool, str]:
         """

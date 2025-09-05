@@ -40,7 +40,7 @@ class ChatRequest(BaseModel):
     messages: List[Dict[str, str]]
 
 class ChatResponse(BaseModel):
-    response: str
+    answer: str
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
@@ -76,7 +76,7 @@ async def chat(request: ChatRequest):
             log_request_details(request.messages, error=f"Output validation: {error_msg}")
             raise HTTPException(status_code=400, detail=error_msg)
 
-        return ChatResponse(response=response_content)
+        return ChatResponse(answer=response_content)
 
     except HTTPException:
         raise

@@ -82,6 +82,9 @@ services:
     environment:
       - OLLAMA_API_URL=http://ollama:11434
       - OLLAMA_MODEL=phi3
+      - HF_HOME=/root/.cache/huggingface
+    volumes:
+      - llm_cache:/root/.cache/huggingface
     deploy:
       resources:
         limits:
@@ -109,3 +112,4 @@ networks:
 volumes:
   mongodb_data:
   ollama_data:
+  llm_cache:
