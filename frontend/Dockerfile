@@ -12,6 +12,9 @@ RUN npm ci --production=false
 # Copy source code
 COPY . .
 
+# Set browserslist environment variable
+ENV BROWSERSLIST="> 0.5%, last 2 versions, not dead, Chrome >= 90, Firefox >= 88, Safari >= 14, Edge >= 90, iOS >= 14, Android >= 8"
+
 # Build the application
 RUN npm run build --prod
 

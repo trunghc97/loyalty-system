@@ -30,7 +30,7 @@ import { AuthService } from '../../services/auth.service';
               </div>
               <div class="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center">
                 <span class="text-white text-sm font-medium">
-                  {{ user.username?.charAt(0)?.toUpperCase() }}
+                  {{ user.username.charAt(0).toUpperCase() }}
                 </span>
               </div>
             </div>
