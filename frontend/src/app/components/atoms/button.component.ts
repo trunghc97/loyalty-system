@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
@@ -45,7 +46,12 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
         transform: rotate(360deg);
       }
     }
-  `]
+  `],
+  standalone: true,
+  imports: [
+      CommonModule
+      
+    ],
 })
 export class ButtonComponent {
   @Input() variant: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' = 'default';

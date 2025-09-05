@@ -37,21 +37,12 @@ import { NavbarComponent } from './components/organisms/navbar.component';
   declarations: [
     AppComponent,
     // Atoms components
-    ButtonComponent,
-    CardComponent,
-    CardHeaderComponent,
-    CardTitleComponent,
-    CardDescriptionComponent,
-    CardContentComponent,
     CardFooterComponent,
-    InputComponent,
-    BadgeComponent,
     // Molecules components
     FormFieldComponent,
     FormLabelComponent,
     FormDescriptionComponent,
     FormMessageComponent,
-    PointsCardComponent,
     ChatbotLlmComponent,
     // Organisms components
     NavbarComponent
@@ -61,7 +52,16 @@ import { NavbarComponent } from './components/organisms/navbar.component';
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
-    AppRoutingModule
+    AppRoutingModule,
+    CardComponent,
+    CardHeaderComponent,
+    CardTitleComponent,
+    CardDescriptionComponent,
+    CardContentComponent,
+    BadgeComponent,
+    PointsCardComponent,
+    ButtonComponent,
+    InputComponent,
   ],
   providers: [
     {

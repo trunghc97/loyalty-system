@@ -31,9 +31,10 @@ export class LoginComponent {
 
       const { username, password } = this.loginForm.value;
 
-      this.apiService.login({ username, password }).subscribe({
-        next: (response) => {
-          // Store auth token
+      this.apiService.login({ username, password })
+      .then( (response: any) => {
+        // Store auth token
+          this.isLoading = false;
           const token = response.token || response.access_token;
           if (token) {
             localStorage.setItem('auth-storage', JSON.stringify({
@@ -42,15 +43,31 @@ export class LoginComponent {
           }
 
           this.router.navigate(['/dashboard']);
-        },
-        error: (error) => {
-          this.errorMessage = error.error?.message || 'Đăng nhập thất bại';
-          this.isLoading = false;
-        },
-        complete: () => {
-          this.isLoading = false;
-        }
-      });
+      })
+      .catch((err : any) => {
+        this.errorMessage = err.error?.message || 'Đăng nhập thất bại';
+        this.isLoading = false;
+      })
+      // .subscribe({
+      //   next: (response: any) => {
+      //     // Store auth token
+      //     const token = response.token || response.access_token;
+      //     if (token) {
+      //       localStorage.setItem('auth-storage', JSON.stringify({
+      //         state: { user: { token } }
+      //       }));
+      //     }
+
+      //     this.router.navigate(['/dashboard']);
+      //   },
+      //   error: (error: any) => {
+      //     this.errorMessage = error.error?.message || 'Đăng nhập thất bại';
+      //     this.isLoading = false;
+      //   },
+      //   complete: () => {
+      //     this.isLoading = false;
+      //   }
+      // });
     } else {
       this.markFormGroupTouched();
     }

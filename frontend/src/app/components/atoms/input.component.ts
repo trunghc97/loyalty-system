@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -22,7 +23,12 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
       useExisting: forwardRef(() => InputComponent),
       multi: true
     }
-  ]
+  ],
+  standalone: true,
+  imports: [
+        CommonModule
+        
+      ],
 })
 export class InputComponent implements ControlValueAccessor {
   @Input() type: string = 'text';
@@ -35,7 +41,7 @@ export class InputComponent implements ControlValueAccessor {
   value: string = '';
 
   private onChange: (value: string) => void = () => {};
-  private onTouched: () => void = () => {};
+  onTouched: () => void = () => {};
 
   get inputClasses(): string {
     const baseClasses = 'flex h-9 w-full rounded-md border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50';

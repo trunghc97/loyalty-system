@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
 @Component({
@@ -7,7 +8,12 @@ import { Component, Input } from '@angular/core';
       <ng-content></ng-content>
     </div>
   `,
-  styles: []
+  styles: [],
+  standalone:true,
+  imports: [
+        CommonModule
+        
+      ],
 })
 export class BadgeComponent {
   @Input() variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' = 'default';

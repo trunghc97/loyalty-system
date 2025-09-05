@@ -44,18 +44,27 @@ export class RegisterComponent {
 
       const { username, email, password } = this.registerForm.value;
 
-      this.authService.register(email, username, password).subscribe({
-        next: () => {
-          this.router.navigate(['/dashboard']);
-        },
-        error: (error) => {
-          this.errorMessage = error.error?.message || 'Đăng ký thất bại';
-          this.isLoading = false;
-        },
-        complete: () => {
-          this.isLoading = false;
-        }
-      });
+      this.authService.register(email, username, password)
+      .then( () => {
+        this.isLoading = false;
+        this.router.navigate(['/dashboard']);
+      })
+      .catch((err : any) => {
+        this.errorMessage = err.error?.message || 'Đăng ký thất bại';
+        this.isLoading = false;
+      })
+      // .subscribe({
+      //   next: () => {
+      //     this.router.navigate(['/dashboard']);
+      //   },
+      //   error: (error : any) => {
+      //     this.errorMessage = error.error?.message || 'Đăng ký thất bại';
+      //     this.isLoading = false;
+      //   },
+      //   complete: () => {
+      //     this.isLoading = false;
+      //   }
+      // });
     } else {
       this.markFormGroupTouched();
     }

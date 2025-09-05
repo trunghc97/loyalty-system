@@ -7,7 +7,8 @@ import { Component, Input } from '@angular/core';
       <ng-content></ng-content>
     </div>
   `,
-  styles: []
+  styles: [],
+  standalone:true
 })
 export class CardComponent {
   @Input() className = '';
@@ -20,7 +21,8 @@ export class CardComponent {
       <ng-content></ng-content>
     </div>
   `,
-  styles: []
+  styles: [],
+  standalone:true
 })
 export class CardHeaderComponent {
   @Input() className = '';
@@ -33,7 +35,8 @@ export class CardHeaderComponent {
       <ng-content></ng-content>
     </h3>
   `,
-  styles: []
+  styles: [],
+  standalone:true
 })
 export class CardTitleComponent {
   @Input() className = '';
@@ -46,7 +49,8 @@ export class CardTitleComponent {
       <ng-content></ng-content>
     </p>
   `,
-  styles: []
+  styles: [],
+  standalone:true
 })
 export class CardDescriptionComponent {
   @Input() className = '';
@@ -59,7 +63,8 @@ export class CardDescriptionComponent {
       <ng-content></ng-content>
     </div>
   `,
-  styles: []
+  styles: [],
+  standalone:true
 })
 export class CardContentComponent {
   @Input() className = '';

@@ -21,7 +21,8 @@ import {
     RouterModule,
     // Atoms components
     ButtonComponent,
-    InputComponent
+    InputComponent,
+    RouterModule.forChild([{ path: '', component: LoginComponent }])
   ]
 })
 export class LoginModule { }

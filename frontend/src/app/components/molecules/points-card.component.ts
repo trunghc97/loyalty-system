@@ -1,4 +1,6 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { ButtonComponent, CardComponent, CardContentComponent, CardHeaderComponent, CardTitleComponent } from '../atoms';
 
 @Component({
   selector: 'app-points-card',
@@ -37,10 +39,19 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
       </app-card-content>
     </app-card>
   `,
-  styles: []
+  styles: [],
+  standalone:true,
+  imports: [
+        CommonModule,
+        CardContentComponent,
+        CardComponent,
+        CardHeaderComponent,
+        CardTitleComponent,
+        ButtonComponent
+      ],
 })
 export class PointsCardComponent {
-  @Input() points = 0;
+  @Input() points : number | null = 0;
 
   @Output() onEarn = new EventEmitter<void>();
   @Output() onTransfer = new EventEmitter<void>();

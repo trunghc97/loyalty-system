@@ -35,7 +35,7 @@ export class AuthService {
 
   async login(username: string, password: string): Promise<Observable<any>> {
     try {
-      const response = await this.apiService.login({ username, password }).toPromise();
+      const response = await (await this.apiService.login({ username, password })).toPromise();
 
       // Extract user data from response
       const userData = {
@@ -58,7 +58,7 @@ export class AuthService {
       console.log('Starting registration process...');
       console.log('Data:', { email, username, password: '***' });
 
-      const response = await this.apiService.register({ email, username, password }).toPromise();
+      const response = await (await this.apiService.register({ email, username, password })).toPromise();
 
       console.log('Registration successful:', response);
 
