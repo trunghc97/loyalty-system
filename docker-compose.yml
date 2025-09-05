@@ -96,7 +96,7 @@ services:
       - "8082:8000"
     environment:
       - OLLAMA_API_URL=http://ollama:11434
-      - OLLAMA_MODEL=phi3
+      - OLLAMA_MODEL=meta-llama-3-8b-instruct
       - OLLAMA_TIMEOUT=180
       - HF_HOME=/root/.cache/huggingface
     volumes:
