@@ -64,7 +64,7 @@ Response:
 Để giảm tải RAM/CPU:
 
 1. Sử dụng model nhẹ hơn:
-   - Thay đổi `OLLAMA_MODEL=phi3` thành `OLLAMA_MODEL=phi2` trong docker-compose.yml
+   - Thay đổi `OLLAMA_MODEL=meta-llama-3-8b-instruct` thành `OLLAMA_MODEL=phi3` trong docker-compose.yml
    - Model phi2 nhẹ hơn nhưng vẫn cho kết quả tốt
 
 2. Cấu hình Ollama:
