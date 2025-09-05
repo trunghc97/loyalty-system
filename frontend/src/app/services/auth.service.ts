@@ -33,9 +33,9 @@ export class AuthService {
     return !!this.user;
   }
 
-  async login(username: string, password: string): Promise<Observable<any>> {
+  async login(username: string, password: string): Promise<any> {
     try {
-      const response = await (await this.apiService.login({ username, password })).toPromise();
+      const response = await this.apiService.login({ username, password });
 
       // Extract user data from response
       const userData = {
@@ -49,16 +49,16 @@ export class AuthService {
       return response;
     } catch (error) {
       console.error('Login failed:', error);
-      return throwError(() => error);
+      throw error;
     }
   }
 
-  async register(email: string, username: string, password: string): Promise<Observable<any>> {
+  async register(email: string, username: string, password: string): Promise<any> {
     try {
       console.log('Starting registration process...');
       console.log('Data:', { email, username, password: '***' });
 
-      const response = await (await this.apiService.register({ email, username, password })).toPromise();
+      const response = await this.apiService.register({ email, username, password });
 
       console.log('Registration successful:', response);
 
@@ -74,7 +74,7 @@ export class AuthService {
       return response;
     } catch (error) {
       console.error('Registration failed:', error);
-      return throwError(() => error);
+      throw error;
     }
   }
 

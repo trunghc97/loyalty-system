@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +17,7 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private apiService: ApiService,
+    private authService: AuthService,
     private router: Router
   ) {
     this.loginForm = this.fb.group({
@@ -24,50 +26,21 @@ export class LoginComponent {
     });
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.loginForm.valid) {
       this.isLoading = true;
       this.errorMessage = '';
 
       const { username, password } = this.loginForm.value;
 
-      this.apiService.login({ username, password })
-      .then( (response: any) => {
-        // Store auth token
-          this.isLoading = false;
-          const token = response.token || response.access_token;
-          if (token) {
-            localStorage.setItem('auth-storage', JSON.stringify({
-              state: { user: { token } }
-            }));
-          }
-
-          this.router.navigate(['/dashboard']);
-      })
-      .catch((err : any) => {
-        this.errorMessage = err.error?.message || 'Đăng nhập thất bại';
+      try {
+        await this.authService.login(username, password);
         this.isLoading = false;
-      })
-      // .subscribe({
-      //   next: (response: any) => {
-      //     // Store auth token
-      //     const token = response.token || response.access_token;
-      //     if (token) {
-      //       localStorage.setItem('auth-storage', JSON.stringify({
-      //         state: { user: { token } }
-      //       }));
-      //     }
-
-      //     this.router.navigate(['/dashboard']);
-      //   },
-      //   error: (error: any) => {
-      //     this.errorMessage = error.error?.message || 'Đăng nhập thất bại';
-      //     this.isLoading = false;
-      //   },
-      //   complete: () => {
-      //     this.isLoading = false;
-      //   }
-      // });
+        this.router.navigate(['/dashboard']);
+      } catch (error: any) {
+        this.errorMessage = error.error?.message || 'Đăng nhập thất bại';
+        this.isLoading = false;
+      }
     } else {
       this.markFormGroupTouched();
     }

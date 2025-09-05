@@ -30,6 +30,7 @@ export interface TransferRequest extends PointsTransaction {
 })
 export class ApiService {
   private baseUrl = '/api';
+  private llmBaseUrl = 'http://localhost:8082';
 
   constructor(
     private http: HttpClient,
@@ -57,22 +58,23 @@ export class ApiService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  async login(data: LoginRequest): Promise<Observable<any>> {
+  async login(data: LoginRequest): Promise<any> {
     try {
       const publicKeyResponse = await this.getPublicKey().toPromise();
       const publicKey = publicKeyResponse.publicKey;
       const encryptedPassword = await this.encryptionService.encrypt(publicKey, data.password);
 
+      // Convert Observable to Promise
       return this.http.post(`${this.baseUrl}/auth/login`, {
         username: data.username,
         password: encryptedPassword
-      }).pipe(catchError(this.handleError.bind(this)));
+      }).pipe(catchError(this.handleError.bind(this))).toPromise();
     } catch (error) {
-      return throwError(() => error);
+      throw error;
     }
   }
 
-  async register(data: RegisterRequest): Promise<Observable<any>> {
+  async register(data: RegisterRequest): Promise<any> {
     try {
       console.log('Getting public key...');
       const publicKeyResponse = await this.getPublicKey().toPromise();
@@ -84,17 +86,14 @@ export class ApiService {
       console.log('Password encrypted successfully');
 
       console.log('Sending registration request...');
-      const response = this.http.post(`${this.baseUrl}/auth/register`, {
+      return this.http.post(`${this.baseUrl}/auth/register`, {
         email: data.email,
         username: data.username,
         password: encryptedPassword
-      }).pipe(catchError(this.handleError.bind(this)));
-
-      console.log('Registration response:', response);
-      return response;
+      }).pipe(catchError(this.handleError.bind(this))).toPromise();
     } catch (error) {
       console.error('Registration error:', error);
-      return throwError(() => error);
+      throw error;
     }
   }
 
@@ -131,6 +130,17 @@ export class ApiService {
 
   payWithPoints(data: { amount: number }): Observable<any> {
     return this.http.post(`${this.baseUrl}/points/pay`, data)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  // LLM Chat APIs
+  chat(messages: Array<{role: string, content: string}>): Observable<any> {
+    return this.http.post(`${this.llmBaseUrl}/chat`, { messages })
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  getLlmHealth(): Observable<any> {
+    return this.http.get(`${this.llmBaseUrl}/health`)
       .pipe(catchError(this.handleError.bind(this)));
   }
 }

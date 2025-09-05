@@ -32,9 +32,20 @@ def log_request_details(messages: List[Dict[str, str]], error: str = None):
     except Exception as e:
         logger.error(f"Error logging request details: {str(e)}")
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="LLM Guard Service")
 ollama_client = OllamaClient()
 guard = GuardValidator()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ChatRequest(BaseModel):
     messages: List[Dict[str, str]]

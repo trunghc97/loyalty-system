@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class OllamaClient:
     def __init__(self):
         self.base_url = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
-        self.model = os.getenv("OLLAMA_MODEL", "meta-llama-3-8b-instruct")
+        self.model = os.getenv("OLLAMA_MODEL", "llama3.2")
         
         # Configure retry strategy
         retry_strategy = Retry(

@@ -20,13 +20,13 @@ export interface ChatResponse {
   providedIn: 'root'
 })
 export class LlmService {
-  private baseUrl = '/api/llm';
+  private llmBaseUrl = 'http://localhost:8082';
 
   constructor(private http: HttpClient) {}
 
   chat(messages: ChatMessage[]): Observable<ChatResponse> {
     const request: ChatRequest = { messages };
-    return this.http.post<ChatResponse>(`${this.baseUrl}/chat`, request)
+    return this.http.post<ChatResponse>(`${this.llmBaseUrl}/chat`, request)
       .pipe(
         catchError(this.handleError)
       );
